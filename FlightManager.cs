@@ -8,14 +8,20 @@ namespace  NEA
 {
     class FlightManager {
         Dictionary<string, Airport> airports;
-        Airport outAirport = default;
+        Airport outAirport = default(Airport);
         string ukAirport = null;
-        Aircraft craftType = default;
+        Aircraft craftType = default(Aircraft);
         int nFirstclass = -1;
+
+        static void CPrint(string content, ConsoleColor color) {
+            Console.ForegroundColor = color;
+            Console.Write(content + "\n");
+            Console.ForegroundColor = ConsoleColor.White;
+        }
 
         public void LoadAirports (string filename) {
             if(!File.Exists(filename)) {
-                Console.WriteLine("Airports file not found");
+                CPrint("Airports file not found", ConsoleColor.Red);
                 Environment.Exit(1);
             }
 
@@ -37,7 +43,7 @@ namespace  NEA
             if (selection != "lpl" && selection != "boh")
             {
                 Console.Clear();
-                Console.WriteLine("Not a valid UK Airport");
+                CPrint("Not a valid UK Airport",ConsoleColor.Red);
                 Thread.Sleep(1500);
                 return;
             }
@@ -48,7 +54,7 @@ namespace  NEA
             if (!airports.ContainsKey(dSelection))
             {
                 Console.Clear();
-                Console.WriteLine("Not a Valid Destination");
+                CPrint("Not a Valid Destination",ConsoleColor.Red);
                 Thread.Sleep(1500);
                 return;
             }
@@ -60,13 +66,14 @@ namespace  NEA
 
         private void FlightDetails()
         {
+
             Console.Clear();
             Console.WriteLine("Select A Aircraft:");
             Console.WriteLine("1. Medium Narrow Body");
             Console.WriteLine("2. Large Narrow Body");
             Console.WriteLine("3. Medium Wide Body");
             Aircraft selection;
-            switch (Console.ReadKey().Key)
+            switch (Console.ReadKey(true).Key)
             {
                 case ConsoleKey.D1:
                     selection = new Aircraft("Medium Narrow Body", 8, 2650, 180, 8);
@@ -80,14 +87,16 @@ namespace  NEA
                     selection = new Aircraft("Medium Wide Body", 5, 4050, 406, 14);  
                     break;
                 default:
-                    Console.WriteLine("Not Valid Key");
+                    Console.Clear();
+                    CPrint("Not Valid Key", ConsoleColor.Red);
+                    Thread.Sleep(1500);
                     return;
             }
 
             if (ukAirport == null)
             {
                 Console.Clear();
-                Console.WriteLine("There is no selected Airport to confirm Range");
+                CPrint("There is no selected Airport to confirm Range",ConsoleColor.Red);
                 Thread.Sleep(1500);
                 return;
             }
@@ -95,7 +104,7 @@ namespace  NEA
             if (selection.FlightRange < (ukAirport == "lpl" ? outAirport.disLpl : outAirport.disBoh))
             {
                 Console.Clear();
-                Console.WriteLine("That aircraft can not do a flight that long");
+                CPrint("That aircraft can not do a flight that long", ConsoleColor.Red);
                 Thread.Sleep(1500);
                 return;
             }
@@ -107,7 +116,7 @@ namespace  NEA
             if (!int.TryParse(seatsIn, out seatsOut))
             {
                 Console.Clear();
-                Console.WriteLine("Not a valid number");
+                CPrint("Not a valid number", ConsoleColor.Red);
                 Thread.Sleep(1500);
                 return;
             }
@@ -116,7 +125,7 @@ namespace  NEA
                 seatsOut > selection.Capacity / 2)
             {
                 Console.Clear();
-                Console.WriteLine("Invalid number based on Aircraft");
+                CPrint("Invalid number based on Aircraft", ConsoleColor.Red);
                 Thread.Sleep(1500);
                 return;
             }
@@ -140,7 +149,7 @@ namespace  NEA
                 if (!int.TryParse(stanPriceIn, out stanPrice))
                 {
                     Console.Clear();
-                    Console.WriteLine("Not a valid number");
+                    CPrint("Not a valid number",ConsoleColor.Red);
                     Thread.Sleep(1500);
                     return;
                 }
@@ -154,7 +163,7 @@ namespace  NEA
                 if (!int.TryParse(fPriceIn, out fPrice))
                 {
                     Console.Clear();
-                    Console.WriteLine("Not a valid number");
+                    CPrint("Not a valid number", ConsoleColor.Red);
                     Thread.Sleep(1500);
                     return;
                 }
@@ -173,49 +182,73 @@ namespace  NEA
                 Console.WriteLine("The Final profit of the Flight is: " + profit.ToString("0.00"));
             }  else if (profit < 0)
             {
-                Console.WriteLine("The Final loss of the Flight is: " + profit.ToString("0.00"));
+                Console.WriteLine("The Final loss of the Flight is: " + Math.Abs(profit).ToString("0.00"));
             }
             else
             {
                 Console.WriteLine("There is no loss or profit");
             }
             
-            Console.ReadKey();
+            Console.ReadKey(true);
         }
         public void DisplayMenu() {
             while (true)
             {
                 Console.Clear();
-                Console.WriteLine("Selected UK Airport: " + (ukAirport ?? "Not Selected"));
-                Console.WriteLine("Selected Destination: " + (outAirport.Equals(default(Airport)) ? "Not Selected" : outAirport.fullName));
-                Console.WriteLine("Selected Aircraft: " + (craftType.Equals(default(Aircraft)) ? "Not Selected" : craftType.Name));
-                Console.WriteLine("Selected  First Class Seats: " + (nFirstclass == -1 ? "Not Selected" : nFirstclass.ToString()));
-            
+                Console.Write("Selected UK Airport: ");
+                CPrint(ukAirport ?? "Not Selected", ukAirport == null ? ConsoleColor.Red : ConsoleColor.Green);
+                Console.Write("Selected Destination: ");
+                CPrint(outAirport.Equals(default(Airport)) ? "Not Selected" : outAirport.fullName, outAirport.Equals(default(Airport)) ? ConsoleColor.Red : ConsoleColor.Green);
+                Console.Write("Selected Aircraft: ");
+                CPrint(craftType.Equals(default(Aircraft)) ? "Not Selected" : craftType.Name, craftType.Equals(default(Aircraft)) ? ConsoleColor.Red : ConsoleColor.Green);
+                Console.Write("Selected  First Class Seats: ");
+                CPrint(nFirstclass == -1 ? "Not Selected" : nFirstclass.ToString(), nFirstclass == -1 ? ConsoleColor.Red : ConsoleColor.Green);
                 Console.WriteLine("\n1. Enter airport details");
-                Console.WriteLine("2. Enter flight details");
-                Console.WriteLine("3. Enter price plan and calculate profit");
+                if (ukAirport == null) {
+                    CPrint("2. Enter flight details", ConsoleColor.DarkGray);
+                } else {
+                    Console.WriteLine("2. Enter flight details");
+                }
+                
+                if (nFirstclass == -1 ) {
+                    CPrint("3. Enter price plan and calculate profit", ConsoleColor.DarkGray);
+                } else {
+                    Console.WriteLine("3. Enter price plan and calculate profit");
+                }
                 Console.WriteLine("4. Clear Data");
                 Console.WriteLine("5. Quit");
 
-                switch (Console.ReadKey().Key)
+                switch (Console.ReadKey(true).Key)
                 {
                     case ConsoleKey.D1:
                         AirportDetails();
                         break;
                     
                     case ConsoleKey.D2:
+                        if (ukAirport == null) {
+                            Console.Clear();
+                            CPrint("Airports are not selected: Needed For Range Calculations", ConsoleColor.Red);
+                            Thread.Sleep(1500);
+                            continue;
+                        }
                         FlightDetails();
                         break;
                     
                     case ConsoleKey.D3:
+                    if (nFirstclass == -1) {
+                            Console.Clear();
+                            CPrint("Flight Info is not set", ConsoleColor.Red);
+                            Thread.Sleep(1500);
+                            continue;
+                        }
                         CalculateProfit();
                         break;
                     
                     case ConsoleKey.D4:
                         ukAirport = null;
-                        outAirport = default;
+                        outAirport = default(Airport);
                         nFirstclass = -1;
-                        craftType = default;
+                        craftType = default(Aircraft);
                         break;
                  
                     case ConsoleKey.D5:
